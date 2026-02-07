@@ -1,111 +1,118 @@
 import yfinance as yf
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
-import math
 
-# ---------- Helpers ----------
+# ---------- RSI ----------
+def rsi(prices, period=14):
+    gains, losses = [], []
+    for i in range(1, len(prices)):
+        diff = prices[i] - prices[i-1]
+        gains.append(max(diff, 0))
+        losses.append(abs(min(diff, 0)))
 
-def get_price(symbol):
-    t = yf.Ticker(symbol)
-    data = t.history(period="1d", interval="5m")
-    return float(data["Close"].iloc[-1])
+    avg_gain = sum(gains[-period:]) / period
+    avg_loss = sum(losses[-period:]) / period
 
-def get_rsi(symbol, period=14):
-    t = yf.Ticker(symbol)
-    data = t.history(period="5d", interval="5m")["Close"]
-
-    delta = data.diff()
-    gain = delta.clip(lower=0)
-    loss = -delta.clip(upper=0)
-
-    avg_gain = gain.rolling(period).mean()
-    avg_loss = loss.rolling(period).mean()
+    if avg_loss == 0:
+        return 100
 
     rs = avg_gain / avg_loss
-    rsi = 100 - (100 / (1 + rs))
-    return float(rsi.iloc[-1])
+    return round(100 - (100 / (1 + rs)), 2)
 
-def get_support_resistance(symbol):
-    t = yf.Ticker(symbol)
-    data = t.history(period="2d", interval="5m")
 
-    recent = data.tail(60)
-    high = recent["High"].max()
-    low = recent["Low"].min()
+# ---------- Support / Resistance ----------
+def support_resistance(prices):
+    recent = prices[-30:]
+    high = max(recent)
+    low = min(recent)
+    return round(low, 2), round(high, 2)
 
-    return float(low), float(high)
 
-def round_strike(price, step):
-    base = round(price / step) * step
-    return [base, base + step, base - step]
+# ---------- Strike Suggestion ----------
+def strikes(price, step):
+    atm = round(price / step) * step
+    return [atm - step, atm, atm + step]
 
-# ---------- Core Analyzer ----------
 
+# ---------- Expiry ----------
+def next_thursday():
+    today = datetime.now()
+    days = (3 - today.weekday()) % 7
+    if days == 0:
+        days = 7
+    return (today + timedelta(days=days)).strftime("%d-%b-%Y")
+
+
+# ---------- Core Logic ----------
 def analyze(name, symbol, step):
-    price = get_price(symbol)
-    rsi = get_rsi(symbol)
-    support, resistance = get_support_resistance(symbol)
+    ticker = yf.Ticker(symbol)
+    hist = ticker.history(period="5d", interval="5m")
 
-    range_size = resistance - support
-    near_resistance = price > (resistance - range_size * 0.25)
-    near_support = price < (support + range_size * 0.25)
+    closes = hist["Close"].tolist()
+    current_price = closes[-1]
 
-    # Market phase
-    if near_resistance:
-        phase = "NEAR RESISTANCE"
-    elif near_support:
-        phase = "NEAR SUPPORT"
-    else:
-        phase = "MID RANGE"
+    r = rsi(closes)
+    support, resistance = support_resistance(closes)
 
-    # Signal logic (REALISTIC)
+    # Momentum (key logic)
+    momentum = current_price - closes[-3]
+
+    near_res = abs(current_price - resistance) < (resistance - support) * 0.15
+    near_sup = abs(current_price - support) < (resistance - support) * 0.15
+
     signal = "AVOID"
 
-    if near_resistance and rsi > 60:
+    if near_res and r > 60 and momentum > 0:
         signal = "BUY CALL"
 
-    elif near_support and rsi < 40:
+    elif near_sup and r < 40 and momentum < 0:
         signal = "BUY PUT"
 
-    strikes = round_strike(price, step)
+    # Targets
+    if signal == "BUY CALL":
+        target = resistance
+        sl = support
+    elif signal == "BUY PUT":
+        target = support
+        sl = resistance
+    else:
+        target = resistance
+        sl = support
+
+    phase = "CONSOLIDATION"
+    if current_price > resistance:
+        phase = "BREAKOUT UP"
+    elif current_price < support:
+        phase = "BREAKOUT DOWN"
+    elif near_res:
+        phase = "NEAR RESISTANCE"
+    elif near_sup:
+        phase = "NEAR SUPPORT"
 
     return {
         "signal": signal,
-        "current_price": f"₹{price:.2f}",
-        "suggested_strikes": strikes,
-        "expiry": get_next_thursday(),
+        "current_price": f"₹{current_price:.2f}",
+        "suggested_strikes": strikes(current_price, step),
+        "expiry": next_thursday(),
         "targets": {
-            "target": f"₹{resistance:.2f}",
-            "stop_loss": f"₹{support:.2f}"
+            "target": f"₹{target:.2f}",
+            "stop_loss": f"₹{sl:.2f}"
         },
         "indicators": {
-            "rsi": round(rsi, 2),
+            "rsi": r,
             "support": f"₹{support:.2f}",
             "resistance": f"₹{resistance:.2f}"
         },
         "options_behavior": {
             "market_phase": phase,
-            "best_time_window": "10:45–12:15 best for options",
-            "avoid_reason": "Wait for price to come near S/R" if signal=="AVOID" else "",
             "breakout_above": f"₹{resistance:.2f}",
             "breakout_below": f"₹{support:.2f}"
         },
         "time": datetime.now().strftime("%H:%M:%S")
     }
 
-# ---------- Expiry ----------
-
-def get_next_thursday():
-    today = datetime.now()
-    days = (3 - today.weekday()) % 7
-    if days == 0:
-        days = 7
-    next_thu = today.replace(hour=0, minute=0, second=0) + \
-               timedelta(days=days)
-    return next_thu.strftime("%d-%b-%Y")
 
 # ---------- Main ----------
-
 def main():
     result = {
         "nifty": analyze("NIFTY", "^NSEI", 50),
@@ -113,12 +120,11 @@ def main():
         "generated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S IST")
     }
 
-    with open("data.json", "w", encoding="utf-8") as f:
-        json.dump(result, f, indent=2, ensure_ascii=False)
+    with open("data.json", "w") as f:
+        json.dump(result, f, indent=2)
 
-    print(json.dumps(result, indent=2, ensure_ascii=False))
+    print("data.json created")
 
 
 if __name__ == "__main__":
-    from datetime import timedelta
     main()
