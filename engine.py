@@ -127,13 +127,19 @@ def analyze(name, symbol):
         ])
 
         signal = "AVOID"
-        if bullish >= 3 and "RANGE" not in phase:
-            signal = "BUY CALL"
-        elif bearish >= 3 and "RANGE" not in phase:
-            signal = "BUY PUT"
 
-        strikes = get_suggested_strikes(current_price, signal)
-        target, sl = calculate_target_stoploss(current_price, signal, vix)
+# First priority: options behaviour
+if "BREAKOUT UP" in phase:
+    signal = "BUY CALL"
+elif "BREAKOUT DOWN" in phase:
+    signal = "BUY PUT"
+
+# Only if not in range/consoldiation, allow indicators
+elif bullish >= 3 and "CONSOLIDATION" not in phase:
+    signal = "BUY CALL"
+elif bearish >= 3 and "CONSOLIDATION" not in phase:
+    signal = "BUY PUT"
+
 
         return {
             "signal": signal,
