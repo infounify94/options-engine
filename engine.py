@@ -1,6 +1,7 @@
 import requests
 import statistics
 from datetime import datetime
+import json
 
 TWELVE_KEY = "1e88d174b30146ceb4b18045710afcfc"
 NEWS_KEY = "dfbfbb2c1046406997fc9284575e5487"
@@ -14,7 +15,8 @@ def get_price(symbol):
 def get_indicator(symbol, indicator):
     url = f"https://api.twelvedata.com/{indicator}?symbol={symbol}&interval=5min&apikey={TWELVE_KEY}"
     r = requests.get(url).json()
-    return float(r["values"][0][indicator.lower()])
+    key = indicator.lower()
+    return float(r["values"][0][key])
 
 def get_vix():
     url = f"https://api.twelvedata.com/quote?symbol=INDIAVIX&apikey={TWELVE_KEY}"
@@ -22,7 +24,7 @@ def get_vix():
     return float(r["close"])
 
 def get_news_sentiment():
-    url = f"https://newsapi.org/v2/everything?q=india stock market OR nifty OR rbi OR budget&apiKey={NEWS_KEY}"
+    url = f"https://newsapi.org/v2/everything?q=nifty OR banknifty OR rbi OR stock market india&apiKey={NEWS_KEY}"
     r = requests.get(url).json()
     titles = [a["title"].lower() for a in r["articles"][:10]]
 
@@ -43,10 +45,10 @@ def decision(symbol):
     news = get_news_sentiment()
 
     last = closes[-1]
-    avg = statistics.mean(closes)
 
     side = "AVOID"
-    entry = exit = ""
+    entry = ""
+    exit = ""
 
     if last > ema and rsi > 55 and macd > 0 and news >= 0:
         side = "BUY CALL (CE)"
@@ -74,4 +76,4 @@ result = {
 }
 
 with open("data.json", "w") as f:
-    f.write(str(result))
+    json.dump(result, f, indent=2)
