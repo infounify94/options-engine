@@ -1,90 +1,77 @@
 import requests
-import yfinance as yf
-import json
+import statistics
 from datetime import datetime
 
-# -------- OPTION CHAIN MIRROR (NOT NSE DIRECT) -------- #
+TWELVE_KEY = "1e88d174b30146ceb4b18045710afcfc"
+NEWS_KEY = "dfbfbb2c1046406997fc9284575e5487"
 
-def get_option_chain(symbol):
-    if symbol == "NIFTY":
-        url = "https://api.moneycontrol.com/mcapi/v1/optionchain/nifty"
-    else:
-        url = "https://api.moneycontrol.com/mcapi/v1/optionchain/banknifty"
+def get_price(symbol):
+    url = f"https://api.twelvedata.com/time_series?symbol={symbol}&interval=5min&outputsize=50&apikey={TWELVE_KEY}"
+    r = requests.get(url).json()
+    closes = [float(x["close"]) for x in r["values"]]
+    return closes
 
-    try:
-        data = requests.get(url, timeout=10).json()
-        return data["data"]
-    except:
-        return []
-
-
-# -------- MARKET DATA -------- #
+def get_indicator(symbol, indicator):
+    url = f"https://api.twelvedata.com/{indicator}?symbol={symbol}&interval=5min&apikey={TWELVE_KEY}"
+    r = requests.get(url).json()
+    return float(r["values"][0][indicator.lower()])
 
 def get_vix():
-    try:
-        vix = yf.Ticker("^INDIAVIX")
-        data = vix.history(period="1d", interval="5m")
-        return float(data["Close"].iloc[-1])
-    except:
-        return 15.0
+    url = f"https://api.twelvedata.com/quote?symbol=INDIAVIX&apikey={TWELVE_KEY}"
+    r = requests.get(url).json()
+    return float(r["close"])
 
+def get_news_sentiment():
+    url = f"https://newsapi.org/v2/everything?q=india stock market OR nifty OR rbi OR budget&apiKey={NEWS_KEY}"
+    r = requests.get(url).json()
+    titles = [a["title"].lower() for a in r["articles"][:10]]
 
-def get_index_price(symbol):
-    try:
-        ticker = yf.Ticker(symbol)
-        data = ticker.history(period="1d", interval="5m")
-        return float(data["Close"].iloc[-1])
-    except:
-        return 0.0
+    score = 0
+    for t in titles:
+        if any(w in t for w in ["crash","fall","fear","drop","war","inflation"]):
+            score -= 1
+        if any(w in t for w in ["rise","growth","profit","gain","bullish","record"]):
+            score += 1
+    return score
 
-
-# -------- LOGIC -------- #
-
-def analyze(symbol, yf_symbol):
-    spot = get_index_price(yf_symbol)
+def decision(symbol):
+    closes = get_price(symbol)
+    ema = get_indicator(symbol, "ema")
+    rsi = get_indicator(symbol, "rsi")
+    macd = get_indicator(symbol, "macd")
     vix = get_vix()
-    chain = get_option_chain(symbol)
+    news = get_news_sentiment()
 
-    ce_oi = 0
-    pe_oi = 0
+    last = closes[-1]
+    avg = statistics.mean(closes)
 
-    for item in chain:
-        ce_oi += int(item.get("CE_OI", 0))
-        pe_oi += int(item.get("PE_OI", 0))
+    side = "AVOID"
+    entry = exit = ""
 
-    if pe_oi > ce_oi * 1.2:
-        trade = "Buy CE"
-        condition = "Bullish Pressure from OI"
-    elif ce_oi > pe_oi * 1.2:
-        trade = "Buy PE"
-        condition = "Bearish Pressure from OI"
-    else:
-        trade = "Straddle"
-        condition = "Balanced OI, Expect Volatility"
+    if last > ema and rsi > 55 and macd > 0 and news >= 0:
+        side = "BUY CALL (CE)"
+        entry = f"Above {last}"
+        exit = f"Near {last + 80}"
 
-    entry = round(spot + 20, 2)
-    exit_zone = round(spot + 120, 2)
-    invalid = round(spot - 80, 2)
+    elif last < ema and rsi < 45 and macd < 0 and news <= 0:
+        side = "BUY PUT (PE)"
+        entry = f"Below {last}"
+        exit = f"Near {last - 80}"
+
+    if vix > 20:
+        side += " | High Volatility"
 
     return {
-        "market_condition": condition,
-        "trade_type": trade,
-        "entry_zone": entry,
-        "exit_zone": exit_zone,
-        "invalidation": invalid,
-        "confidence": 75 if vix > 15 else 65,
-        "vix": vix,
-        "spot": spot,
-        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        "side": side,
+        "entry": entry,
+        "exit": exit,
+        "time": datetime.now().strftime("%H:%M")
     }
 
-
-# -------- RUN -------- #
-
-data = {
-    "nifty": analyze("NIFTY", "^NSEI"),
-    "banknifty": analyze("BANKNIFTY", "^NSEBANK")
+result = {
+    "nifty": decision("NIFTY"),
+    "banknifty": decision("BANKNIFTY")
 }
 
 with open("data.json", "w") as f:
-    json.dump(data, f, indent=4)
+    f.write(str(result))
