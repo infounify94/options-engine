@@ -1,22 +1,76 @@
 {
   "nifty": {
-    "side": "AVOID",
-    "entry": "",
-    "exit": "",
-    "time": "13:48",
-    "price": "\u20b925693.70",
-    "rsi": 65.35,
-    "momentum": "0.16%",
-    "vix": 11.94
+    "signal": "BUY CALL",
+    "strength": "MODERATE",
+    "action": "Buy Call Options",
+    "current_price": "₹25693.70",
+    "suggested_strikes": [
+      25700,
+      25750,
+      25800
+    ],
+    "expiry": "12-Feb-2026",
+    "entry": {
+      "condition": "Enter when NIFTY is above ₹25693.70",
+      "premium_budget": "2-5% of capital per trade"
+    },
+    "targets": {
+      "target_price": "₹25805.64",
+      "stop_loss": "₹25637.73",
+      "risk_reward": "1:2"
+    },
+    "indicators": {
+      "rsi": 65.35,
+      "momentum": "0.16%",
+      "volume_ratio": "1.00x",
+      "support": "₹25618.58",
+      "resistance": "₹25714.78"
+    },
+    "risk": {
+      "level": "LOW",
+      "vix": 11.94,
+      "max_loss": "Limited to premium paid",
+      "position_size": "1-2 lots for beginners, 3-5 for experienced"
+    },
+    "confidence": "63%",
+    "time": "13:53:04",
+    "market_context": "Strong uptrend | Low volatility - stable"
   },
   "banknifty": {
-    "side": "AVOID",
-    "entry": "",
-    "exit": "",
-    "time": "13:48",
-    "price": "\u20b960120.55",
-    "rsi": 72.03,
-    "momentum": "0.20%",
-    "vix": 11.94
-  }
+    "signal": "AVOID",
+    "strength": "WEAK",
+    "action": "No trade recommended",
+    "current_price": "₹60120.55",
+    "suggested_strikes": [
+      60100
+    ],
+    "expiry": "12-Feb-2026",
+    "entry": {
+      "condition": "Enter when BANKNIFTY is at ₹60120.55",
+      "premium_budget": "2-5% of capital per trade"
+    },
+    "targets": {
+      "target_price": "₹60120.55",
+      "stop_loss": "₹60120.55",
+      "risk_reward": "1:2"
+    },
+    "indicators": {
+      "rsi": 72.03,
+      "momentum": "0.20%",
+      "volume_ratio": "1.00x",
+      "support": "₹59988.55",
+      "resistance": "₹60189.30"
+    },
+    "risk": {
+      "level": "LOW",
+      "vix": 11.94,
+      "max_loss": "Limited to premium paid",
+      "position_size": "1-2 lots for beginners, 3-5 for experienced"
+    },
+    "confidence": "45%",
+    "time": "13:53:04",
+    "market_context": "Strong uptrend | Overbought (caution) | Low volatility - stable"
+  },
+  "generated_at": "2026-02-07 13:53:04 IST",
+  "next_update": "10 minutes"
 }
