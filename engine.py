@@ -1,91 +1,113 @@
-import requests
+import yfinance as yf
 from datetime import datetime
 import json
 import sys
-import time
-
-# NSE headers to mimic browser
-NSE_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Accept': '*/*',
-    'Accept-Language': 'en-US,en;q=0.9',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Referer': 'https://www.nseindia.com/',
-    'Connection': 'keep-alive',
-    'Cache-Control': 'no-cache'
-}
 
 def log(msg):
     """Simple logging"""
     print(f"{datetime.now().strftime('%H:%M:%S')} - {msg}")
 
-def get_nse_data(symbol):
-    """Fetch NSE data with multiple attempts"""
-    session = requests.Session()
-    session.headers.update(NSE_HEADERS)
-    
+def get_stock_data(symbol):
+    """
+    Fetch stock data from Yahoo Finance
+    symbol: '^NSEI' for NIFTY, '^NSEBANK' for BANKNIFTY
+    """
     try:
-        # Step 1: Visit homepage to get cookies
-        log(f"Initializing NSE session for {symbol}...")
-        session.get('https://www.nseindia.com/', timeout=10)
-        time.sleep(2)
+        log(f"Fetching data for {symbol}...")
         
-        # Step 2: Get option chain
-        log(f"Fetching option chain for {symbol}...")
-        url = f"https://www.nseindia.com/api/option-chain-indices?symbol={symbol}"
-        response = session.get(url, timeout=15)
+        # Get stock object
+        stock = yf.Ticker(symbol)
         
-        if response.status_code == 200:
-            data = response.json()
-            
-            if 'records' in data and 'underlyingValue' in data['records']:
-                price = float(data['records']['underlyingValue'])
-                log(f"✅ Got {symbol} data - Price: ₹{price}")
-                
-                # Calculate PCR
-                records_data = data['records'].get('data', [])
-                total_call_oi = sum(item.get('CE', {}).get('openInterest', 0) for item in records_data[:10])
-                total_put_oi = sum(item.get('PE', {}).get('openInterest', 0) for item in records_data[:10])
-                pcr = round(total_put_oi / total_call_oi, 2) if total_call_oi > 0 else 1.0
-                
-                return {'price': price, 'pcr': pcr, 'success': True}
+        # Get current price
+        info = stock.info
+        current_price = info.get('currentPrice') or info.get('regularMarketPrice') or info.get('previousClose', 0)
         
-        log(f"❌ Failed to get {symbol} data (Status: {response.status_code})")
-        return {'success': False}
+        if not current_price:
+            log(f"❌ Could not get price for {symbol}")
+            return None
+        
+        # Get historical data for calculations
+        hist = stock.history(period="5d", interval="5m")
+        
+        if hist.empty:
+            log(f"❌ No historical data for {symbol}")
+            return None
+        
+        closes = hist['Close'].tolist()
+        
+        # Calculate simple moving average (SMA)
+        sma_20 = sum(closes[-20:]) / 20 if len(closes) >= 20 else current_price
+        
+        # Calculate RSI
+        rsi = calculate_rsi(closes)
+        
+        # Calculate momentum
+        momentum = ((current_price - closes[-10]) / closes[-10] * 100) if len(closes) >= 10 else 0
+        
+        log(f"✅ {symbol} - Price: ₹{current_price:.2f}, RSI: {rsi:.2f}, Momentum: {momentum:.2f}%")
+        
+        return {
+            'price': current_price,
+            'sma': sma_20,
+            'rsi': rsi,
+            'momentum': momentum,
+            'success': True
+        }
         
     except Exception as e:
         log(f"❌ Error fetching {symbol}: {e}")
-        return {'success': False}
+        return None
 
-def get_vix():
-    """Get India VIX"""
-    session = requests.Session()
-    session.headers.update(NSE_HEADERS)
+def calculate_rsi(prices, period=14):
+    """Calculate RSI from price list"""
+    if len(prices) < period + 1:
+        return 50  # Neutral
     
+    gains = []
+    losses = []
+    
+    for i in range(1, len(prices)):
+        change = prices[i] - prices[i-1]
+        if change > 0:
+            gains.append(change)
+            losses.append(0)
+        else:
+            gains.append(0)
+            losses.append(abs(change))
+    
+    avg_gain = sum(gains[-period:]) / period
+    avg_loss = sum(losses[-period:]) / period
+    
+    if avg_loss == 0:
+        return 100
+    
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+    return round(rsi, 2)
+
+def get_india_vix():
+    """Get India VIX from Yahoo Finance"""
     try:
-        session.get('https://www.nseindia.com/', timeout=10)
-        time.sleep(1)
+        log("Fetching India VIX...")
+        vix = yf.Ticker("^INDIAVIX")
+        info = vix.info
+        current_vix = info.get('regularMarketPrice') or info.get('previousClose', 0)
         
-        url = "https://www.nseindia.com/api/allIndices"
-        response = session.get(url, timeout=10)
+        if current_vix:
+            log(f"✅ India VIX: {current_vix:.2f}")
+            return current_vix
         
-        if response.status_code == 200:
-            data = response.json()
-            for item in data.get('data', []):
-                if item.get('index') == 'INDIA VIX':
-                    vix = float(item.get('last', 0))
-                    log(f"✅ India VIX: {vix}")
-                    return vix
+        log("⚠️ Could not fetch VIX")
+        return None
     except Exception as e:
-        log(f"⚠️ Could not fetch VIX: {e}")
-    
-    return None
+        log(f"⚠️ VIX fetch failed: {e}")
+        return None
 
-def analyze_symbol(symbol, data):
+def analyze_symbol(name, symbol, data):
     """Generate trading signal from data"""
-    if not data['success']:
+    if not data or not data.get('success'):
         return {
-            "side": "ERROR - No NSE Data",
+            "side": "ERROR - No Data Available",
             "entry": "",
             "exit": "",
             "time": datetime.now().strftime("%H:%M"),
@@ -93,25 +115,38 @@ def analyze_symbol(symbol, data):
         }
     
     price = data['price']
-    pcr = data['pcr']
+    sma = data['sma']
+    rsi = data['rsi']
+    momentum = data['momentum']
     
     side = "AVOID"
     entry = ""
     exit = ""
     
-    # PCR-based signals
-    if pcr > 1.2:
+    log(f"\n{name} Analysis:")
+    log(f"  Price: ₹{price:.2f}")
+    log(f"  SMA(20): ₹{sma:.2f}")
+    log(f"  RSI: {rsi:.2f}")
+    log(f"  Momentum: {momentum:.2f}%")
+    
+    # Trading logic
+    # BULLISH: Price > SMA AND RSI > 50 AND Positive Momentum
+    if price > sma and rsi > 50 and momentum > 0.5:
         side = "BUY CALL (CE)"
         entry = f"Above ₹{price:.2f}"
         exit = f"Target ₹{price + 100:.2f}"
-        log(f"✅ {symbol} Signal: BUY CALL (PCR: {pcr})")
-    elif pcr < 0.8:
+        log(f"  ✅ Signal: BUY CALL (Bullish)")
+    
+    # BEARISH: Price < SMA AND RSI < 50 AND Negative Momentum
+    elif price < sma and rsi < 50 and momentum < -0.5:
         side = "BUY PUT (PE)"
         entry = f"Below ₹{price:.2f}"
         exit = f"Target ₹{price - 100:.2f}"
-        log(f"✅ {symbol} Signal: BUY PUT (PCR: {pcr})")
+        log(f"  ✅ Signal: BUY PUT (Bearish)")
+    
+    # NEUTRAL: Conditions not met
     else:
-        log(f"⚪ {symbol} Signal: AVOID (PCR: {pcr})")
+        log(f"  ⚪ Signal: AVOID (Neutral conditions)")
     
     return {
         "side": side,
@@ -119,13 +154,14 @@ def analyze_symbol(symbol, data):
         "exit": exit,
         "time": datetime.now().strftime("%H:%M"),
         "price": f"₹{price:.2f}",
-        "pcr": pcr
+        "rsi": rsi,
+        "momentum": f"{momentum:.2f}%"
     }
 
 def main():
-    """Main execution - ALWAYS creates data.json"""
+    """Main execution"""
     log("="*60)
-    log("🚀 NSE Options Engine Starting")
+    log("🚀 Yahoo Finance Options Engine")
     log(f"Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S IST')}")
     log("="*60)
     
@@ -148,53 +184,57 @@ def main():
     }
     
     try:
-        # Fetch NIFTY
-        log("\n📊 Fetching NIFTY data...")
-        nifty_data = get_nse_data("NIFTY")
-        time.sleep(3)  # Delay between requests
+        # Fetch NIFTY (Yahoo symbol: ^NSEI)
+        log("\n📊 Analyzing NIFTY...")
+        nifty_data = get_stock_data("^NSEI")
         
-        # Fetch BANKNIFTY
-        log("\n📊 Fetching BANKNIFTY data...")
-        banknifty_data = get_nse_data("BANKNIFTY")
-        time.sleep(2)
+        # Fetch BANKNIFTY (Yahoo symbol: ^NSEBANK)
+        log("\n📊 Analyzing BANKNIFTY...")
+        banknifty_data = get_stock_data("^NSEBANK")
         
         # Get VIX
         log("\n📊 Fetching VIX...")
-        vix = get_vix()
+        vix = get_india_vix()
         
         # Generate signals
-        result['nifty'] = analyze_symbol("NIFTY", nifty_data)
-        result['banknifty'] = analyze_symbol("BANKNIFTY", banknifty_data)
+        result['nifty'] = analyze_symbol("NIFTY", "^NSEI", nifty_data)
+        result['banknifty'] = analyze_symbol("BANKNIFTY", "^NSEBANK", banknifty_data)
         
         # Add VIX to both
         if vix:
             result['nifty']['vix'] = vix
             result['banknifty']['vix'] = vix
+            
             if vix > 20:
                 result['nifty']['side'] += f" | High Volatility (VIX: {vix:.2f})"
                 result['banknifty']['side'] += f" | High Volatility (VIX: {vix:.2f})"
+                log(f"\n⚠️ HIGH VOLATILITY WARNING: VIX = {vix:.2f}")
         
     except Exception as e:
         log(f"💥 Critical error: {e}")
+        import traceback
+        traceback.print_exc()
         result['nifty']['error'] = str(e)
         result['banknifty']['error'] = str(e)
     
-    # ALWAYS save data.json (even on complete failure)
+    # ALWAYS save data.json
     try:
         with open("data.json", "w") as f:
             json.dump(result, f, indent=2)
+        
         log("\n" + "="*60)
         log("✅ data.json created successfully")
         log("="*60)
+        log("\n📊 RESULTS:")
         print(json.dumps(result, indent=2))
+        
     except Exception as e:
         log(f"💥 Could not create data.json: {e}")
-        # Last resort - create minimal file
         with open("data.json", "w") as f:
-            f.write('{"error": "Failed to create data.json"}')
+            f.write('{"error": "Failed to create results"}')
     
-    log("✅ Script completed")
-    sys.exit(0)  # Always exit 0
+    log("\n✅ Script completed successfully")
+    sys.exit(0)
 
 if __name__ == "__main__":
     main()
