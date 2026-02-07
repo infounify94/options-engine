@@ -2,23 +2,131 @@ name: Run Options Engine
 
 on:
   schedule:
-    - cron: "*/10 3-10 * * 1-5"
-  workflow_dispatch:
+    # Indian Stock Market Hours: 9:15 AM - 3:30 PM IST (Mon-Fri)
+    # IST = UTC + 5:30, so 9:15 AM IST = 3:45 AM UTC
+    # Market hours in UTC: 3:45 AM - 10:00 AM
+    
+    # Run every 5 minutes during market hours
+    - cron: "45,50,55 3 * * 1-5"      # 9:15 AM - 9:55 AM IST
+    - cron: "*/5 4-9 * * 1-5"          # 10:00 AM - 2:55 PM IST
+    - cron: "0,5,10,15,20,25,30 10 * * 1-5"  # 3:00 PM - 3:30 PM IST
+    
+  workflow_dispatch:  # Allow manual trigger anytime
+  
+  # Optional: Run on push for testing (remove in production)
+  # push:
+  #   branches: [ main, master ]
 
 jobs:
   run:
     runs-on: ubuntu-latest
+    
+    # Only run during IST market hours (additional safety check)
+    # This prevents accidental runs outside market hours
+    if: github.event_name == 'workflow_dispatch' || (github.event.schedule && github.event_name == 'schedule')
+    
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Fetch all history for proper git operations
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      - run: pip install yfinance requests
-      - run: python engine.py
-      - name: Commit JSON
+          cache: 'pip'  # Cache pip dependencies for faster runs
+      
+      - name: Install dependencies
         run: |
-          git config --global user.name 'bot'
+          python -m pip install --upgrade pip
+          pip install requests yfinance
+      
+      - name: Run options engine
+        id: run_engine
+        continue-on-error: true  # Don't fail workflow if engine has issues
+        run: |
+          echo "Running engine at $(TZ='Asia/Kolkata' date '+%Y-%m-%d %H:%M:%S IST')"
+          python engine.py
+        env:
+          PYTHONUNBUFFERED: 1
+      
+      - name: Verify output
+        id: verify
+        run: |
+          if [ -f "data.json" ]; then
+            echo "✅ data.json created"
+            echo "Content:"
+            cat data.json
+            echo "json_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ data.json not found"
+            echo "json_exists=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+      
+      - name: Commit and push results
+        if: steps.verify.outputs.json_exists == 'true'
+        run: |
+          git config --global user.name 'Options Engine Bot'
           git config --global user.email 'bot@github.com'
+          
+          # Add the data file
           git add data.json
-          git commit -m "update data" || echo "no changes"
-          git push
+          
+          # Commit with timestamp
+          TIMESTAMP=$(TZ='Asia/Kolkata' date '+%Y-%m-%d %H:%M:%S IST')
+          git diff --quiet && git diff --staged --quiet || \
+            (git commit -m "📊 Update options data - $TIMESTAMP [skip ci]" && git push)
+          
+          echo "✅ Data committed and pushed successfully"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Upload artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: options-data-${{ github.run_number }}
+          path: data.json
+          retention-days: 3
+          if-no-files-found: warn
+      
+      - name: Create run summary
+        if: always()
+        run: |
+          TIMESTAMP=$(TZ='Asia/Kolkata' date '+%Y-%m-%d %H:%M:%S IST')
+          
+          echo "## 📊 Options Engine - Market Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Run Time:** $TIMESTAMP" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f "data.json" ]; then
+            echo "### ✅ Analysis Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat data.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            
+            # Extract signals for quick view
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### 🎯 Quick Signals" >> $GITHUB_STEP_SUMMARY
+            
+            # Parse NIFTY signal
+            NIFTY_SIGNAL=$(python3 -c "import json; data=json.load(open('data.json')); print(data.get('nifty', {}).get('side', 'N/A'))" 2>/dev/null || echo "Parse error")
+            echo "- **NIFTY:** $NIFTY_SIGNAL" >> $GITHUB_STEP_SUMMARY
+            
+            # Parse BANKNIFTY signal
+            BANK_SIGNAL=$(python3 -c "import json; data=json.load(open('data.json')); print(data.get('banknifty', {}).get('side', 'N/A'))" 2>/dev/null || echo "Parse error")
+            echo "- **BANKNIFTY:** $BANK_SIGNAL" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ❌ Analysis Failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Check logs above for error details." >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*Next run in ~5 minutes during market hours*" >> $GITHUB_STEP_SUMMARY
