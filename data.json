@@ -1,76 +1,57 @@
 {
   "nifty": {
     "signal": "BUY CALL",
-    "strength": "MODERATE",
-    "action": "Buy Call Options",
-    "current_price": "₹25693.70",
+    "current_price": "₹25673.60",
     "suggested_strikes": [
+      25650,
       25700,
-      25750,
-      25800
+      25750
     ],
     "expiry": "12-Feb-2026",
-    "entry": {
-      "condition": "Enter when NIFTY is above ₹25693.70",
-      "premium_budget": "2-5% of capital per trade"
-    },
     "targets": {
-      "target_price": "₹25805.64",
-      "stop_loss": "₹25637.73",
-      "risk_reward": "1:2"
+      "target": "₹25785.54",
+      "stop_loss": "₹25617.63"
     },
     "indicators": {
       "rsi": 65.35,
-      "momentum": "0.16%",
-      "volume_ratio": "1.00x",
+      "momentum": "0.08%",
       "support": "₹25618.58",
       "resistance": "₹25714.78"
     },
-    "risk": {
-      "level": "LOW",
-      "vix": 11.94,
-      "max_loss": "Limited to premium paid",
-      "position_size": "1-2 lots for beginners, 3-5 for experienced"
+    "options_behavior": {
+      "market_phase": "CONSOLIDATION",
+      "best_time_window": "10:45–12:15 best for options",
+      "avoid_reason": "Inside range. Wait for breakout.",
+      "breakout_above": "₹25714.78",
+      "breakout_below": "₹25618.58"
     },
-    "confidence": "63%",
-    "time": "13:53:04",
-    "market_context": "Strong uptrend | Low volatility - stable"
+    "time": "13:58:12"
   },
   "banknifty": {
     "signal": "AVOID",
-    "strength": "WEAK",
-    "action": "No trade recommended",
-    "current_price": "₹60120.55",
+    "current_price": "₹60112.80",
     "suggested_strikes": [
       60100
     ],
     "expiry": "12-Feb-2026",
-    "entry": {
-      "condition": "Enter when BANKNIFTY is at ₹60120.55",
-      "premium_budget": "2-5% of capital per trade"
-    },
     "targets": {
-      "target_price": "₹60120.55",
-      "stop_loss": "₹60120.55",
-      "risk_reward": "1:2"
+      "target": "₹60112.80078125",
+      "stop_loss": "₹60112.80078125"
     },
     "indicators": {
       "rsi": 72.03,
-      "momentum": "0.20%",
-      "volume_ratio": "1.00x",
+      "momentum": "0.19%",
       "support": "₹59988.55",
-      "resistance": "₹60189.30"
+      "resistance": "₹60189.3"
     },
-    "risk": {
-      "level": "LOW",
-      "vix": 11.94,
-      "max_loss": "Limited to premium paid",
-      "position_size": "1-2 lots for beginners, 3-5 for experienced"
+    "options_behavior": {
+      "market_phase": "CONSOLIDATION",
+      "best_time_window": "10:45–12:15 best for options",
+      "avoid_reason": "Inside range. Wait for breakout.",
+      "breakout_above": "₹60189.3",
+      "breakout_below": "₹59988.55"
     },
-    "confidence": "45%",
-    "time": "13:53:04",
-    "market_context": "Strong uptrend | Overbought (caution) | Low volatility - stable"
+    "time": "13:58:12"
   },
-  "generated_at": "2026-02-07 13:53:04 IST",
-  "next_update": "10 minutes"
+  "generated_at": "2026-02-07 13:58:12 IST"
 }
