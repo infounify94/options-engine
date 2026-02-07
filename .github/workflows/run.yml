@@ -3,14 +3,13 @@ on:
   schedule:
     - cron: "*/10 3-10 * * 1-5"
   workflow_dispatch:
+
 jobs:
   run:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          
+      
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
@@ -19,11 +18,11 @@ jobs:
       
       - run: python engine.py
       
-      - - name: Commit and push JSON
-  run: |
-    git config user.name 'github-actions[bot]'
-    git config user.email 'github-actions[bot]@users.noreply.github.com'
-    git add data.json
-    git commit -m "📊 Update data [skip ci]" || exit 0
-    git pull --rebase
-    git push
+      - name: Commit and push
+        run: |
+          git config user.name 'bot'
+          git config user.email 'bot@github.com'
+          git add data.json
+          git commit -m "update data" || exit 0
+          git pull --rebase
+          git push
