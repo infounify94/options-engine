@@ -1,16 +1,22 @@
 {
   "nifty": {
-    "side": "ERROR - No NSE Data",
+    "side": "AVOID",
     "entry": "",
     "exit": "",
-    "time": "13:32",
-    "price": "N/A"
+    "time": "13:48",
+    "price": "\u20b925693.70",
+    "rsi": 65.35,
+    "momentum": "0.16%",
+    "vix": 11.94
   },
   "banknifty": {
-    "side": "ERROR - No NSE Data",
+    "side": "AVOID",
     "entry": "",
     "exit": "",
-    "time": "13:32",
-    "price": "N/A"
+    "time": "13:48",
+    "price": "\u20b960120.55",
+    "rsi": 72.03,
+    "momentum": "0.20%",
+    "vix": 11.94
   }
 }
