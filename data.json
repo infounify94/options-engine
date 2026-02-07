@@ -1,57 +1,53 @@
 {
   "nifty": {
-    "signal": "BUY CALL",
-    "current_price": "₹25673.60",
+    "signal": "AVOID",
+    "current_price": "\u20b925673.60",
     "suggested_strikes": [
+      25600,
       25650,
-      25700,
-      25600
+      25700
     ],
     "expiry": "12-Feb-2026",
     "targets": {
-      "target": "₹25703.45",
-      "stop_loss": "₹25492.15"
+      "target": "\u20b925700.95",
+      "stop_loss": "\u20b925553.85"
     },
     "indicators": {
       "rsi": 65.35,
-      "support": "₹25492.15",
-      "resistance": "₹25703.45"
+      "support": "\u20b925553.85",
+      "resistance": "\u20b925700.95"
     },
     "options_behavior": {
-      "market_phase": "NEAR RESISTANCE",
-      "best_time_window": "10:45–12:15 best for options",
-      "avoid_reason": "",
-      "breakout_above": "₹25703.45",
-      "breakout_below": "₹25492.15"
+      "market_phase": "CONSOLIDATION",
+      "breakout_above": "\u20b925700.95",
+      "breakout_below": "\u20b925553.85"
     },
-    "time": "14:08:01"
+    "time": "14:13:08"
   },
   "banknifty": {
-    "signal": "BUY CALL",
-    "current_price": "₹60112.80",
+    "signal": "AVOID",
+    "current_price": "\u20b960112.80",
     "suggested_strikes": [
+      60000,
       60100,
-      60200,
-      60000
+      60200
     ],
     "expiry": "12-Feb-2026",
     "targets": {
-      "target": "₹60149.85",
-      "stop_loss": "₹59645.10"
+      "target": "\u20b960141.55",
+      "stop_loss": "\u20b959795.95"
     },
     "indicators": {
       "rsi": 72.03,
-      "support": "₹59645.10",
-      "resistance": "₹60149.85"
+      "support": "\u20b959795.95",
+      "resistance": "\u20b960141.55"
     },
     "options_behavior": {
       "market_phase": "NEAR RESISTANCE",
-      "best_time_window": "10:45–12:15 best for options",
-      "avoid_reason": "",
-      "breakout_above": "₹60149.85",
-      "breakout_below": "₹59645.10"
+      "breakout_above": "\u20b960141.55",
+      "breakout_below": "\u20b959795.95"
     },
-    "time": "14:08:01"
+    "time": "14:13:09"
   },
-  "generated_at": "2026-02-07 14:08:01 IST"
+  "generated_at": "2026-02-07 14:13:09 IST"
 }
