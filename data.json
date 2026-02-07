@@ -1,57 +1,57 @@
 {
   "nifty": {
-    "signal": "BUY CALL",
+    "signal": "AVOID",
     "current_price": "₹25673.60",
     "suggested_strikes": [
       25650,
       25700,
-      25750
+      25600
     ],
     "expiry": "12-Feb-2026",
     "targets": {
-      "target": "₹25785.54",
-      "stop_loss": "₹25617.63"
+      "target": "₹25703.45",
+      "stop_loss": "₹25492.15"
     },
     "indicators": {
       "rsi": 65.35,
-      "momentum": "0.08%",
-      "support": "₹25618.58",
-      "resistance": "₹25714.78"
+      "support": "₹25492.15",
+      "resistance": "₹25703.45"
     },
     "options_behavior": {
       "market_phase": "CONSOLIDATION",
       "best_time_window": "10:45–12:15 best for options",
       "avoid_reason": "Inside range. Wait for breakout.",
-      "breakout_above": "₹25714.78",
-      "breakout_below": "₹25618.58"
+      "breakout_above": "₹25703.45",
+      "breakout_below": "₹25492.15"
     },
-    "time": "13:58:12"
+    "time": "14:04:52"
   },
   "banknifty": {
     "signal": "AVOID",
     "current_price": "₹60112.80",
     "suggested_strikes": [
-      60100
+      60100,
+      60200,
+      60000
     ],
     "expiry": "12-Feb-2026",
     "targets": {
-      "target": "₹60112.80078125",
-      "stop_loss": "₹60112.80078125"
+      "target": "₹60149.85",
+      "stop_loss": "₹59645.10"
     },
     "indicators": {
       "rsi": 72.03,
-      "momentum": "0.19%",
-      "support": "₹59988.55",
-      "resistance": "₹60189.3"
+      "support": "₹59645.10",
+      "resistance": "₹60149.85"
     },
     "options_behavior": {
       "market_phase": "CONSOLIDATION",
       "best_time_window": "10:45–12:15 best for options",
       "avoid_reason": "Inside range. Wait for breakout.",
-      "breakout_above": "₹60189.3",
-      "breakout_below": "₹59988.55"
+      "breakout_above": "₹60149.85",
+      "breakout_below": "₹59645.10"
     },
-    "time": "13:58:12"
+    "time": "14:04:52"
   },
-  "generated_at": "2026-02-07 13:58:12 IST"
+  "generated_at": "2026-02-07 14:04:52 IST"
 }
