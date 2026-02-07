@@ -46,21 +46,25 @@ def analyze(name, symbol, step):
     rsi = get_rsi(symbol)
     support, resistance = get_support_resistance(symbol)
 
-    # Market phase
-    if price > resistance:
-        phase = "BREAKOUT UP"
-    elif price < support:
-        phase = "BREAKOUT DOWN"
-    else:
-        phase = "CONSOLIDATION"
+    range_size = resistance - support
+    near_resistance = price > (resistance - range_size * 0.25)
+    near_support = price < (support + range_size * 0.25)
 
-    # Signal logic
+    # Market phase
+    if near_resistance:
+        phase = "NEAR RESISTANCE"
+    elif near_support:
+        phase = "NEAR SUPPORT"
+    else:
+        phase = "MID RANGE"
+
+    # Signal logic (REALISTIC)
     signal = "AVOID"
 
-    if phase == "BREAKOUT UP" and rsi > 55:
+    if near_resistance and rsi > 60:
         signal = "BUY CALL"
 
-    elif phase == "BREAKOUT DOWN" and rsi < 45:
+    elif near_support and rsi < 40:
         signal = "BUY PUT"
 
     strikes = round_strike(price, step)
@@ -82,7 +86,7 @@ def analyze(name, symbol, step):
         "options_behavior": {
             "market_phase": phase,
             "best_time_window": "10:45–12:15 best for options",
-            "avoid_reason": "Inside range. Wait for breakout." if phase=="CONSOLIDATION" else "",
+            "avoid_reason": "Wait for price to come near S/R" if signal=="AVOID" else "",
             "breakout_above": f"₹{resistance:.2f}",
             "breakout_below": f"₹{support:.2f}"
         },
