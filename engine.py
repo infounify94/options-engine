@@ -1,42 +1,24 @@
 import requests
 import yfinance as yf
 import json
-import time
 from datetime import datetime
 
-# ------------------ SAFE NSE FETCH ------------------ #
+# -------- OPTION CHAIN MIRROR (NOT NSE DIRECT) -------- #
 
 def get_option_chain(symbol):
-    url = f"https://www.nseindia.com/api/option-chain-indices?symbol={symbol}"
+    if symbol == "NIFTY":
+        url = "https://api.moneycontrol.com/mcapi/v1/optionchain/nifty"
+    else:
+        url = "https://api.moneycontrol.com/mcapi/v1/optionchain/banknifty"
 
-    headers = {
-        "User-Agent": "Mozilla/5.0",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Referer": "https://www.nseindia.com/option-chain"
-    }
-
-    session = requests.Session()
-
-    for attempt in range(3):
-        try:
-            # Get cookies first
-            session.get("https://www.nseindia.com", headers=headers, timeout=10)
-            time.sleep(1)
-
-            response = session.get(url, headers=headers, timeout=10)
-
-            if response.status_code == 200:
-                data = response.json()
-                return data["records"]["data"]
-
-        except Exception as e:
-            time.sleep(2)
-
-    # If all attempts fail
-    return []
+    try:
+        data = requests.get(url, timeout=10).json()
+        return data["data"]
+    except:
+        return []
 
 
-# ------------------ MARKET DATA ------------------ #
+# -------- MARKET DATA -------- #
 
 def get_vix():
     try:
@@ -56,7 +38,7 @@ def get_index_price(symbol):
         return 0.0
 
 
-# ------------------ LOGIC ------------------ #
+# -------- LOGIC -------- #
 
 def analyze(symbol, yf_symbol):
     spot = get_index_price(yf_symbol)
@@ -67,9 +49,8 @@ def analyze(symbol, yf_symbol):
     pe_oi = 0
 
     for item in chain:
-        if "CE" in item and "PE" in item:
-            ce_oi += item["CE"].get("openInterest", 0)
-            pe_oi += item["PE"].get("openInterest", 0)
+        ce_oi += int(item.get("CE_OI", 0))
+        pe_oi += int(item.get("PE_OI", 0))
 
     if pe_oi > ce_oi * 1.2:
         trade = "Buy CE"
@@ -98,7 +79,7 @@ def analyze(symbol, yf_symbol):
     }
 
 
-# ------------------ RUN ENGINE ------------------ #
+# -------- RUN -------- #
 
 data = {
     "nifty": analyze("NIFTY", "^NSEI"),
