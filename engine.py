@@ -15,11 +15,23 @@ def get_index_price(symbol):
 
 def get_option_chain(symbol):
     url = f"https://www.nseindia.com/api/option-chain-indices?symbol={symbol}"
-    headers = {"User-Agent": "Mozilla/5.0"}
+
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Referer": "https://www.nseindia.com/option-chain"
+    }
+
     session = requests.Session()
-    session.get("https://www.nseindia.com", headers=headers)
-    data = session.get(url, headers=headers).json()
-    return data["records"]["data"]
+
+    # First visit homepage to get cookies
+    session.get("https://www.nseindia.com", headers=headers, timeout=10)
+
+    response = session.get(url, headers=headers, timeout=10)
+
+    return response.json()["records"]["data"]
+
 
 def analyze(symbol, yf_symbol):
     spot = get_index_price(yf_symbol)
