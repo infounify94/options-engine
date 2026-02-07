@@ -1,17 +1,10 @@
 import requests
 import yfinance as yf
 import json
+import time
 from datetime import datetime
 
-def get_vix():
-    vix = yf.Ticker("^INDIAVIX")
-    data = vix.history(period="1d", interval="5m")
-    return float(data["Close"].iloc[-1])
-
-def get_index_price(symbol):
-    ticker = yf.Ticker(symbol)
-    data = ticker.history(period="1d", interval="5m")
-    return float(data["Close"].iloc[-1])
+# ------------------ SAFE NSE FETCH ------------------ #
 
 def get_option_chain(symbol):
     url = f"https://www.nseindia.com/api/option-chain-indices?symbol={symbol}"
@@ -19,19 +12,51 @@ def get_option_chain(symbol):
     headers = {
         "User-Agent": "Mozilla/5.0",
         "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
         "Referer": "https://www.nseindia.com/option-chain"
     }
 
     session = requests.Session()
 
-    # First visit homepage to get cookies
-    session.get("https://www.nseindia.com", headers=headers, timeout=10)
+    for attempt in range(3):
+        try:
+            # Get cookies first
+            session.get("https://www.nseindia.com", headers=headers, timeout=10)
+            time.sleep(1)
 
-    response = session.get(url, headers=headers, timeout=10)
+            response = session.get(url, headers=headers, timeout=10)
 
-    return response.json()["records"]["data"]
+            if response.status_code == 200:
+                data = response.json()
+                return data["records"]["data"]
 
+        except Exception as e:
+            time.sleep(2)
+
+    # If all attempts fail
+    return []
+
+
+# ------------------ MARKET DATA ------------------ #
+
+def get_vix():
+    try:
+        vix = yf.Ticker("^INDIAVIX")
+        data = vix.history(period="1d", interval="5m")
+        return float(data["Close"].iloc[-1])
+    except:
+        return 15.0
+
+
+def get_index_price(symbol):
+    try:
+        ticker = yf.Ticker(symbol)
+        data = ticker.history(period="1d", interval="5m")
+        return float(data["Close"].iloc[-1])
+    except:
+        return 0.0
+
+
+# ------------------ LOGIC ------------------ #
 
 def analyze(symbol, yf_symbol):
     spot = get_index_price(yf_symbol)
@@ -43,8 +68,8 @@ def analyze(symbol, yf_symbol):
 
     for item in chain:
         if "CE" in item and "PE" in item:
-            ce_oi += item["CE"]["openInterest"]
-            pe_oi += item["PE"]["openInterest"]
+            ce_oi += item["CE"].get("openInterest", 0)
+            pe_oi += item["PE"].get("openInterest", 0)
 
     if pe_oi > ce_oi * 1.2:
         trade = "Buy CE"
@@ -69,8 +94,11 @@ def analyze(symbol, yf_symbol):
         "confidence": 75 if vix > 15 else 65,
         "vix": vix,
         "spot": spot,
-        "time": datetime.now().strftime("%H:%M:%S")
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
+
+
+# ------------------ RUN ENGINE ------------------ #
 
 data = {
     "nifty": analyze("NIFTY", "^NSEI"),
