@@ -1,7 +1,7 @@
 {
   "nifty": {
     "signal": "AVOID",
-    "current_price": "\u20b925854.95",
+    "current_price": "\u20b925863.30",
     "suggested_strikes": [
       25800,
       25850,
@@ -9,45 +9,45 @@
     ],
     "expiry": "12-Feb-2026",
     "targets": {
-      "target": "\u20b925864.60",
-      "stop_loss": "\u20b925801.60"
+      "target": "\u20b925870.25",
+      "stop_loss": "\u20b925838.15"
     },
     "indicators": {
-      "rsi": 49.89,
-      "support": "\u20b925801.60",
-      "resistance": "\u20b925864.60"
+      "rsi": 59.63,
+      "support": "\u20b925838.15",
+      "resistance": "\u20b925870.25"
     },
     "options_behavior": {
       "market_phase": "CONSOLIDATION",
-      "breakout_above": "\u20b925864.60",
-      "breakout_below": "\u20b925801.60"
+      "breakout_above": "\u20b925870.25",
+      "breakout_below": "\u20b925838.15"
     },
-    "time": "06:47:53"
+    "time": "10:37:17"
   },
   "banknifty": {
     "signal": "AVOID",
-    "current_price": "\u20b960641.35",
+    "current_price": "\u20b960666.80",
     "suggested_strikes": [
-      60500,
       60600,
-      60700
+      60700,
+      60800
     ],
     "expiry": "12-Feb-2026",
     "targets": {
-      "target": "\u20b960698.85",
-      "stop_loss": "\u20b960590.40"
+      "target": "\u20b960672.05",
+      "stop_loss": "\u20b960558.00"
     },
     "indicators": {
-      "rsi": 48.62,
-      "support": "\u20b960590.40",
-      "resistance": "\u20b960698.85"
+      "rsi": 57.84,
+      "support": "\u20b960558.00",
+      "resistance": "\u20b960672.05"
     },
     "options_behavior": {
-      "market_phase": "CONSOLIDATION",
-      "breakout_above": "\u20b960698.85",
-      "breakout_below": "\u20b960590.40"
+      "market_phase": "NEAR RESISTANCE",
+      "breakout_above": "\u20b960672.05",
+      "breakout_below": "\u20b960558.00"
     },
-    "time": "06:47:53"
+    "time": "10:37:17"
   },
-  "generated_at": "2026-02-09 06:47:53 IST"
+  "generated_at": "2026-02-09 10:37:17 IST"
 }
