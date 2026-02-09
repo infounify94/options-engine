@@ -1,53 +1,53 @@
 {
   "nifty": {
     "signal": "AVOID",
-    "current_price": "\u20b925673.60",
+    "current_price": "\u20b925854.95",
     "suggested_strikes": [
-      25600,
-      25650,
-      25700
+      25800,
+      25850,
+      25900
     ],
     "expiry": "12-Feb-2026",
     "targets": {
-      "target": "\u20b925700.95",
-      "stop_loss": "\u20b925553.85"
+      "target": "\u20b925864.60",
+      "stop_loss": "\u20b925801.60"
     },
     "indicators": {
-      "rsi": 65.35,
-      "support": "\u20b925553.85",
-      "resistance": "\u20b925700.95"
+      "rsi": 49.89,
+      "support": "\u20b925801.60",
+      "resistance": "\u20b925864.60"
     },
     "options_behavior": {
       "market_phase": "CONSOLIDATION",
-      "breakout_above": "\u20b925700.95",
-      "breakout_below": "\u20b925553.85"
+      "breakout_above": "\u20b925864.60",
+      "breakout_below": "\u20b925801.60"
     },
-    "time": "14:13:08"
+    "time": "06:47:53"
   },
   "banknifty": {
     "signal": "AVOID",
-    "current_price": "\u20b960112.80",
+    "current_price": "\u20b960641.35",
     "suggested_strikes": [
-      60000,
-      60100,
-      60200
+      60500,
+      60600,
+      60700
     ],
     "expiry": "12-Feb-2026",
     "targets": {
-      "target": "\u20b960141.55",
-      "stop_loss": "\u20b959795.95"
+      "target": "\u20b960698.85",
+      "stop_loss": "\u20b960590.40"
     },
     "indicators": {
-      "rsi": 72.03,
-      "support": "\u20b959795.95",
-      "resistance": "\u20b960141.55"
+      "rsi": 48.62,
+      "support": "\u20b960590.40",
+      "resistance": "\u20b960698.85"
     },
     "options_behavior": {
-      "market_phase": "NEAR RESISTANCE",
-      "breakout_above": "\u20b960141.55",
-      "breakout_below": "\u20b959795.95"
+      "market_phase": "CONSOLIDATION",
+      "breakout_above": "\u20b960698.85",
+      "breakout_below": "\u20b960590.40"
     },
-    "time": "14:13:09"
+    "time": "06:47:53"
   },
-  "generated_at": "2026-02-07 14:13:09 IST"
+  "generated_at": "2026-02-09 06:47:53 IST"
 }
