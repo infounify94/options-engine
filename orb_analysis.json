@@ -1,0 +1,142 @@
+{
+  "strategy": "Opening Range Breakout (ORB)",
+  "philosophy": "Premium moves on range expansion, not indicators",
+  "live_signals": {
+    "nifty": {
+      "index": "NIFTY",
+      "signal": "WAIT",
+      "confidence": "N/A",
+      "current_price": "\u20b925911.55",
+      "expiry": "12-Feb-2026",
+      "opening_range": {
+        "high": "\u20b925961.400390625",
+        "low": "\u20b925871.44921875",
+        "size": "\u20b989.95"
+      },
+      "breakout_status": {
+        "type": "NONE",
+        "strength": "NONE"
+      },
+      "previous_day": {
+        "high": 25922.25,
+        "low": 25780.9,
+        "close": 25867.3
+      },
+      "volatility": {
+        "atr": {
+          "current": 18.66,
+          "expanding": false
+        },
+        "india_vix": {
+          "value": 11.66,
+          "signal": "LOW - Ideal for options",
+          "safe_to_trade": true
+        }
+      },
+      "recommended_option": null,
+      "trade_plan": {
+        "message": "No trade setup yet - be patient",
+        "tip": "Options traders who wait make money. Traders who force trades lose money."
+      },
+      "signal_reasons": [
+        "\u23f3 Price still inside opening range - no breakout yet",
+        "\ud83d\udcca ORB High: \u20b925961.400390625, ORB Low: \u20b925871.44921875",
+        "\ud83d\udca1 Wait for clean break and close outside range"
+      ],
+      "time": "15:46:27 IST"
+    },
+    "banknifty": {
+      "index": "BANKNIFTY",
+      "signal": "WAIT",
+      "confidence": "N/A",
+      "current_price": "\u20b960565.05",
+      "expiry": "12-Feb-2026",
+      "opening_range": {
+        "high": "\u20b960760.6015625",
+        "low": "\u20b960611.3984375",
+        "size": "\u20b9149.20"
+      },
+      "breakout_status": {
+        "type": "PUT",
+        "strength": "MODERATE"
+      },
+      "previous_day": {
+        "high": 60876.2,
+        "low": 60495.7,
+        "close": 60669.35
+      },
+      "volatility": {
+        "atr": {
+          "current": 44.26,
+          "expanding": false
+        },
+        "india_vix": {
+          "value": 11.66,
+          "signal": "LOW - Ideal for options",
+          "safe_to_trade": true
+        }
+      },
+      "recommended_option": null,
+      "trade_plan": {
+        "message": "No trade setup yet - be patient",
+        "tip": "Options traders who wait make money. Traders who force trades lose money."
+      },
+      "signal_reasons": [
+        "\u23f0 After 2 PM and breakout not strong - theta risk too high",
+        "\ud83d\udcca Breakout strength: MODERATE",
+        "\ud83d\udca1 Skip this trade or wait for stronger setup"
+      ],
+      "time": "15:46:27 IST"
+    }
+  },
+  "backtest_results": {
+    "nifty": {
+      "index": "NIFTY",
+      "period": "20 days",
+      "total_trades": 10,
+      "wins": 0,
+      "losses": 10,
+      "win_rate": "0.0%",
+      "avg_win": "0.0%",
+      "avg_loss": "-21.0%",
+      "expectancy": "-21.00%",
+      "total_return": "-4.13%",
+      "final_capital": "\u20b99587.28",
+      "max_capital": "\u20b910000.00",
+      "note": "Premium-based backtest with theta decay simulation"
+    },
+    "banknifty": {
+      "index": "BANKNIFTY",
+      "period": "20 days",
+      "total_trades": 10,
+      "wins": 0,
+      "losses": 10,
+      "win_rate": "0.0%",
+      "avg_win": "0.0%",
+      "avg_loss": "-17.5%",
+      "expectancy": "-17.50%",
+      "total_return": "-3.45%",
+      "final_capital": "\u20b99654.87",
+      "max_capital": "\u20b910000.00",
+      "note": "Premium-based backtest with theta decay simulation"
+    }
+  },
+  "generated_at": "2026-02-10 15:46:29 IST",
+  "trading_rules": [
+    "Rule 1: Only trade ORB breakouts (9:15-9:45 range)",
+    "Rule 2: Require ATR expansion (volatility must increase)",
+    "Rule 3: VIX must be < 20",
+    "Rule 4: Use premium stops (30-40%), not spot stops",
+    "Rule 5: Exit all positions by 3:15 PM",
+    "Rule 6: Max 2-4 trades per day",
+    "Rule 7: If signal says WAIT, then WAIT"
+  ],
+  "critical_notes": [
+    "Options are NOT indicator-based - they're event-based",
+    "Premium only moves on fast breakouts, not slow grinds",
+    "Theta decay kills you if move is too slow",
+    "This strategy gives fewer signals - that's GOOD",
+    "Paper trade for 2 weeks minimum before going live"
+  ],
+  "disclaimer": "Educational only. Not financial advice. Trade at your own risk."
+}
