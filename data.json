@@ -1,53 +1,53 @@
 {
   "nifty": {
     "signal": "AVOID",
-    "current_price": "\u20b925961.75",
+    "current_price": "\u20b925916.80",
     "suggested_strikes": [
+      25850,
       25900,
-      25950,
-      26000
+      25950
     ],
     "expiry": "12-Feb-2026",
     "targets": {
-      "target": "\u20b925976.75",
-      "stop_loss": "\u20b925932.60"
+      "target": "\u20b925978.75",
+      "stop_loss": "\u20b925901.70"
     },
     "indicators": {
-      "rsi": 49.87,
-      "support": "\u20b925932.60",
-      "resistance": "\u20b925976.75"
+      "rsi": 40.17,
+      "support": "\u20b925901.70",
+      "resistance": "\u20b925978.75"
     },
     "options_behavior": {
       "market_phase": "CONSOLIDATION",
-      "breakout_above": "\u20b925976.75",
-      "breakout_below": "\u20b925932.60"
+      "breakout_above": "\u20b925978.75",
+      "breakout_below": "\u20b925901.70"
     },
-    "time": "06:47:46"
+    "time": "10:13:54"
   },
   "banknifty": {
-    "signal": "AVOID",
-    "current_price": "\u20b960729.75",
+    "signal": "BUY PUT",
+    "current_price": "\u20b960568.25",
     "suggested_strikes": [
+      60500,
       60600,
-      60700,
-      60800
+      60700
     ],
     "expiry": "12-Feb-2026",
     "targets": {
-      "target": "\u20b960773.35",
-      "stop_loss": "\u20b960612.60"
+      "target": "\u20b960565.05",
+      "stop_loss": "\u20b960771.50"
     },
     "indicators": {
-      "rsi": 49.67,
-      "support": "\u20b960612.60",
-      "resistance": "\u20b960773.35"
+      "rsi": 22.58,
+      "support": "\u20b960565.05",
+      "resistance": "\u20b960771.50"
     },
     "options_behavior": {
-      "market_phase": "CONSOLIDATION",
-      "breakout_above": "\u20b960773.35",
-      "breakout_below": "\u20b960612.60"
+      "market_phase": "NEAR SUPPORT",
+      "breakout_above": "\u20b960771.50",
+      "breakout_below": "\u20b960565.05"
     },
-    "time": "06:47:47"
+    "time": "10:13:54"
   },
-  "generated_at": "2026-02-10 06:47:47 IST"
+  "generated_at": "2026-02-10 10:13:54 IST"
 }
