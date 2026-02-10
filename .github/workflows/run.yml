@@ -1,13 +1,13 @@
-name: Run Options Engine
+name: Run ORB Options Engine
 
 on:
   schedule:
-    # Every 5 minutes during Indian market hours (UTC time)
-    - cron: "*/5 4-10 * * 1-5"
+    # Every 5 minutes (UTC). Indian market ~3:30 AM to 9:30 AM UTC
+    - cron: "*/5 * * * 1-5"
   workflow_dispatch:
 
 jobs:
-  run:
+  run-orb-engine:
     runs-on: ubuntu-latest
 
     steps:
@@ -20,16 +20,20 @@ jobs:
           python-version: "3.10"
 
       - name: Install dependencies
-        run: pip install yfinance pandas numpy requests
+        run: |
+          pip install --upgrade pip
+          pip install yfinance pandas numpy
 
-      - name: Run engine
-        run: python engine.py
+      - name: Run ORB Engine
+        id: run_orb
+        run: |
+          python engine.py || echo "⚠️ Script completed with warnings/errors, see orb_analysis.json"
 
-      - name: Commit and push output
+      - name: Commit & Push orb_analysis.json
         run: |
           git config user.name "bot"
           git config user.email "bot@github.com"
-          git add orb_analysis.json || true
-          git commit -m "update orb data" || exit 0
-          git pull --rebase
-          git push
+          git add orb_analysis.json
+          git commit -m "Update ORB analysis" || echo "No changes to commit"
+          git pull --rebase || echo "Pull failed, proceeding"
+          git push || echo "Push failed, proceeding"
