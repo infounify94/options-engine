@@ -43,7 +43,7 @@
         "\ud83d\udcca ORB High: \u20b925961.400390625, ORB Low: \u20b925871.44921875",
         "\ud83d\udca1 Wait for clean break and close outside range"
       ],
-      "time": "19:42:27 IST"
+      "time": "22:03:33 IST"
     },
     "banknifty": {
       "index": "BANKNIFTY",
@@ -86,7 +86,7 @@
         "\ud83d\udcca Breakout strength: MODERATE",
         "\ud83d\udca1 Skip this trade or wait for stronger setup"
       ],
-      "time": "19:42:27 IST"
+      "time": "22:03:33 IST"
     }
   },
   "backtest_results": {
@@ -121,7 +121,7 @@
       "note": "Premium-based backtest with theta decay simulation"
     }
   },
-  "generated_at": "2026-02-10 19:42:29 IST",
+  "generated_at": "2026-02-10 22:03:36 IST",
   "trading_rules": [
     "Rule 1: Only trade ORB breakouts (9:15-9:45 range)",
     "Rule 2: Require ATR expansion (volatility must increase)",
