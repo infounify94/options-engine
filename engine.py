@@ -40,9 +40,9 @@ def get_india_vix():
                 signal = "HIGH - AVOID options buying"
             
             return {
-                "value": round(current_vix, 2),
+                "value": round(float(current_vix), 2),
                 "signal": signal,
-                "safe_to_trade": current_vix < 20
+                "safe_to_trade": bool(current_vix < 20)
             }
     except:
         pass
@@ -67,8 +67,8 @@ def atr(df, period=14):
     atr_prev = atr_series.iloc[-2]
     
     return {
-        "current": round(atr_current, 2) if not pd.isna(atr_current) else None,
-        "expanding": atr_current > atr_prev if not pd.isna(atr_current) and not pd.isna(atr_prev) else False
+        "current": round(float(atr_current), 2) if not pd.isna(atr_current) else None,
+        "expanding": bool(atr_current > atr_prev) if not pd.isna(atr_current) and not pd.isna(atr_prev) else False
     }
 
 
@@ -81,9 +81,9 @@ def get_previous_day_levels(symbol):
         if len(hist) >= 2:
             prev_day = hist.iloc[-2]
             return {
-                "high": round(prev_day['High'], 2),
-                "low": round(prev_day['Low'], 2),
-                "close": round(prev_day['Close'], 2)
+                "high": round(float(prev_day['High']), 2),
+                "low": round(float(prev_day['Low']), 2),
+                "close": round(float(prev_day['Close']), 2)
             }
     except:
         pass
@@ -180,6 +180,14 @@ def analyze_orb(symbol, step, name):
         # Get today's intraday data
         hist = ticker.history(period="1d", interval="5m")
         
+        # Check if we got any data
+        if len(hist) == 0:
+            return {
+                "error": f"No data available for {name} - market might be closed or symbol delisted",
+                "index": name,
+                "status": "NO_DATA"
+            }
+        
         # Yahoo index data already in IST — do NOT convert timezone
         # Converting from UTC would shift candles by 5.5 hours!
         # Safe handling for both tz-aware and tz-naive data
@@ -216,9 +224,13 @@ def analyze_orb(symbol, step, name):
         orb_range = orb_high - orb_low
         
         # Current price from last CLOSED candle (not forming candle)
-        current_price = hist['Close'].iloc[-2]
-        current_high = hist['High'].iloc[-2]
-        current_low = hist['Low'].iloc[-2]
+        # Convert to Python float for JSON serialization
+        current_price = float(hist['Close'].iloc[-2])
+        current_high = float(hist['High'].iloc[-2])
+        current_low = float(hist['Low'].iloc[-2])
+        orb_high = float(orb_high)
+        orb_low = float(orb_low)
+        orb_range = float(orb_range)
         
         # Previous day levels
         prev_day = get_previous_day_levels(symbol)
@@ -459,6 +471,12 @@ def backtest_orb_premium_based(symbol, step, name, days_back=20):
         # Get daily data to identify trading days
         daily = ticker.history(start=start_date, end=end_date, interval="1d")
         
+        if len(daily) == 0:
+            return {
+                "error": f"No historical data available for {name}",
+                "index": name
+            }
+        
         trades = []
         capital = 10000
         equity_curve = [capital]
@@ -572,12 +590,12 @@ def backtest_orb_premium_based(symbol, step, name, days_back=20):
                     equity_curve.append(capital)
                     
                     trades.append({
-                        "date": day_date,
+                        "date": str(day_date),
                         "type": breakout,
-                        "entry": entry_price,
+                        "entry": float(entry_price),
                         "outcome": outcome,
-                        "pnl_pct": round(pnl_pct, 2),
-                        "pnl_amount": round(trade_pnl, 2)
+                        "pnl_pct": round(float(pnl_pct), 2),
+                        "pnl_amount": round(float(trade_pnl), 2)
                     })
                     
                     break  # Only one trade per day
@@ -629,34 +647,48 @@ def main():
     
     # Print summary
     print(f"\n📈 NIFTY 50")
-    print(f"   Signal: {nifty.get('signal', 'ERROR')}")
-    if 'confidence' in nifty and nifty['confidence'] != 'N/A':
-        print(f"   Confidence: {nifty['confidence']}")
-    if 'current_price' in nifty:
-        print(f"   Price: {nifty['current_price']}")
-    if 'recommended_option' in nifty and nifty['recommended_option']:
-        opt = nifty['recommended_option']
-        if 'error' not in opt:
-            print(f"   Recommended: {opt['strike']} @ ₹{opt['premium']} (OI: {opt['oi']:,})")
+    if 'error' in nifty:
+        print(f"   Error: {nifty.get('error', 'Unknown error')}")
+    else:
+        print(f"   Signal: {nifty.get('signal', 'ERROR')}")
+        if 'confidence' in nifty and nifty['confidence'] != 'N/A':
+            print(f"   Confidence: {nifty['confidence']}")
+        if 'current_price' in nifty:
+            print(f"   Price: {nifty['current_price']}")
+        if 'recommended_option' in nifty and nifty['recommended_option']:
+            opt = nifty['recommended_option']
+            if 'error' not in opt:
+                print(f"   Recommended: {opt['strike']} @ ₹{opt['premium']} (OI: {opt['oi']:,})")
     
     print(f"\n📊 BANK NIFTY")
-    print(f"   Signal: {banknifty.get('signal', 'ERROR')}")
-    if 'confidence' in banknifty and banknifty['confidence'] != 'N/A':
-        print(f"   Confidence: {banknifty['confidence']}")
-    if 'current_price' in banknifty:
-        print(f"   Price: {banknifty['current_price']}")
-    if 'recommended_option' in banknifty and banknifty['recommended_option']:
-        opt = banknifty['recommended_option']
-        if 'error' not in opt:
-            print(f"   Recommended: {opt['strike']} @ ₹{opt['premium']} (OI: {opt['oi']:,})")
+    if 'error' in banknifty:
+        print(f"   Error: {banknifty.get('error', 'Unknown error')}")
+    else:
+        print(f"   Signal: {banknifty.get('signal', 'ERROR')}")
+        if 'confidence' in banknifty and banknifty['confidence'] != 'N/A':
+            print(f"   Confidence: {banknifty['confidence']}")
+        if 'current_price' in banknifty:
+            print(f"   Price: {banknifty['current_price']}")
+        if 'recommended_option' in banknifty and banknifty['recommended_option']:
+            opt = banknifty['recommended_option']
+            if 'error' not in opt:
+                print(f"   Recommended: {opt['strike']} @ ₹{opt['premium']} (OI: {opt['oi']:,})")
     
-    # Backtesting
-    print("\n" + "="*70)
-    print("📊 Running premium-based backtests (this may take 30-60 seconds)...")
-    print("="*70)
-    
-    nifty_bt = backtest_orb_premium_based("^NSEI", 50, "NIFTY", days_back=20)
-    banknifty_bt = backtest_orb_premium_based("^NSEBANK", 100, "BANKNIFTY", days_back=20)
+    # Only run backtest if we have valid live data
+    if 'error' not in nifty and 'error' not in banknifty:
+        # Backtesting
+        print("\n" + "="*70)
+        print("📊 Running premium-based backtests (this may take 30-60 seconds)...")
+        print("="*70)
+        
+        nifty_bt = backtest_orb_premium_based("^NSEI", 50, "NIFTY", days_back=20)
+        banknifty_bt = backtest_orb_premium_based("^NSEBANK", 100, "BANKNIFTY", days_back=20)
+    else:
+        print("\n" + "="*70)
+        print("⚠️  Skipping backtest - no live data available")
+        print("="*70)
+        nifty_bt = {"error": "Skipped - no live data"}
+        banknifty_bt = {"error": "Skipped - no live data"}
     
     # Compile results
     data = {
