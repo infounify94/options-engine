@@ -1,28 +1,35 @@
 name: Run Options Engine
+
 on:
   schedule:
-    - cron: "*/10 3-10 * * 1-5"
+    # Every 5 minutes during Indian market hours (UTC time)
+    - cron: "*/5 4-10 * * 1-5"
   workflow_dispatch:
 
 jobs:
   run:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - uses: actions/setup-python@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
-          
-      - run: pip install yfinance requests
-      
-      - run: python engine.py
-      
-      - name: Commit and push
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: pip install yfinance pandas numpy requests
+
+      - name: Run engine
+        run: python engine.py
+
+      - name: Commit and push output
         run: |
-          git config user.name 'bot'
-          git config user.email 'bot@github.com'
-          git add data.json
-          git commit -m "update data" || exit 0
+          git config user.name "bot"
+          git config user.email "bot@github.com"
+          git add orb_analysis.json || true
+          git commit -m "update orb data" || exit 0
           git pull --rebase
           git push
