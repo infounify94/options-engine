@@ -43,7 +43,7 @@
         "\ud83d\udcca ORB High: \u20b925961.400390625, ORB Low: \u20b925871.44921875",
         "\ud83d\udca1 Wait for clean break and close outside range"
       ],
-      "time": "22:03:33 IST"
+      "time": "23:57:28 IST"
     },
     "banknifty": {
       "index": "BANKNIFTY",
@@ -86,22 +86,22 @@
         "\ud83d\udcca Breakout strength: MODERATE",
         "\ud83d\udca1 Skip this trade or wait for stronger setup"
       ],
-      "time": "22:03:33 IST"
+      "time": "23:57:28 IST"
     }
   },
   "backtest_results": {
     "nifty": {
       "index": "NIFTY",
       "period": "20 days",
-      "total_trades": 10,
+      "total_trades": 9,
       "wins": 0,
-      "losses": 10,
+      "losses": 9,
       "win_rate": "0.0%",
       "avg_win": "0.0%",
-      "avg_loss": "-21.0%",
-      "expectancy": "-21.00%",
-      "total_return": "-4.13%",
-      "final_capital": "\u20b99587.28",
+      "avg_loss": "-19.4%",
+      "expectancy": "-19.44%",
+      "total_return": "-3.45%",
+      "final_capital": "\u20b99654.87",
       "max_capital": "\u20b910000.00",
       "note": "Premium-based backtest with theta decay simulation"
     },
@@ -121,7 +121,7 @@
       "note": "Premium-based backtest with theta decay simulation"
     }
   },
-  "generated_at": "2026-02-10 22:03:36 IST",
+  "generated_at": "2026-02-10 23:57:29 IST",
   "trading_rules": [
     "Rule 1: Only trade ORB breakouts (9:15-9:45 range)",
     "Rule 2: Require ATR expansion (volatility must increase)",
