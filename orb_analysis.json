@@ -3,125 +3,21 @@
   "philosophy": "Premium moves on range expansion, not indicators",
   "live_signals": {
     "nifty": {
-      "index": "NIFTY",
-      "signal": "WAIT",
-      "confidence": "N/A",
-      "current_price": "\u20b925911.55",
-      "expiry": "12-Feb-2026",
-      "opening_range": {
-        "high": "\u20b925961.400390625",
-        "low": "\u20b925871.44921875",
-        "size": "\u20b989.95"
-      },
-      "breakout_status": {
-        "type": "NONE",
-        "strength": "NONE"
-      },
-      "previous_day": {
-        "high": 25922.25,
-        "low": 25780.9,
-        "close": 25867.3
-      },
-      "volatility": {
-        "atr": {
-          "current": 18.66,
-          "expanding": false
-        },
-        "india_vix": {
-          "value": 11.66,
-          "signal": "LOW - Ideal for options",
-          "safe_to_trade": true
-        }
-      },
-      "recommended_option": null,
-      "trade_plan": {
-        "message": "No trade setup yet - be patient",
-        "tip": "Options traders who wait make money. Traders who force trades lose money."
-      },
-      "signal_reasons": [
-        "\u23f3 Price still inside opening range - no breakout yet",
-        "\ud83d\udcca ORB High: \u20b925961.400390625, ORB Low: \u20b925871.44921875",
-        "\ud83d\udca1 Wait for clean break and close outside range"
-      ],
-      "time": "23:57:28 IST"
+      "error": "Not enough data for NIFTY - market might not be open"
     },
     "banknifty": {
-      "index": "BANKNIFTY",
-      "signal": "WAIT",
-      "confidence": "N/A",
-      "current_price": "\u20b960565.05",
-      "expiry": "12-Feb-2026",
-      "opening_range": {
-        "high": "\u20b960760.6015625",
-        "low": "\u20b960611.3984375",
-        "size": "\u20b9149.20"
-      },
-      "breakout_status": {
-        "type": "PUT",
-        "strength": "MODERATE"
-      },
-      "previous_day": {
-        "high": 60876.2,
-        "low": 60495.7,
-        "close": 60669.35
-      },
-      "volatility": {
-        "atr": {
-          "current": 44.26,
-          "expanding": false
-        },
-        "india_vix": {
-          "value": 11.66,
-          "signal": "LOW - Ideal for options",
-          "safe_to_trade": true
-        }
-      },
-      "recommended_option": null,
-      "trade_plan": {
-        "message": "No trade setup yet - be patient",
-        "tip": "Options traders who wait make money. Traders who force trades lose money."
-      },
-      "signal_reasons": [
-        "\u23f0 After 2 PM and breakout not strong - theta risk too high",
-        "\ud83d\udcca Breakout strength: MODERATE",
-        "\ud83d\udca1 Skip this trade or wait for stronger setup"
-      ],
-      "time": "23:57:28 IST"
+      "error": "Not enough data for BANKNIFTY - market might not be open"
     }
   },
   "backtest_results": {
     "nifty": {
-      "index": "NIFTY",
-      "period": "20 days",
-      "total_trades": 9,
-      "wins": 0,
-      "losses": 9,
-      "win_rate": "0.0%",
-      "avg_win": "0.0%",
-      "avg_loss": "-19.4%",
-      "expectancy": "-19.44%",
-      "total_return": "-3.45%",
-      "final_capital": "\u20b99654.87",
-      "max_capital": "\u20b910000.00",
-      "note": "Premium-based backtest with theta decay simulation"
+      "error": "Skipped - no live data"
     },
     "banknifty": {
-      "index": "BANKNIFTY",
-      "period": "20 days",
-      "total_trades": 10,
-      "wins": 0,
-      "losses": 10,
-      "win_rate": "0.0%",
-      "avg_win": "0.0%",
-      "avg_loss": "-17.5%",
-      "expectancy": "-17.50%",
-      "total_return": "-3.45%",
-      "final_capital": "\u20b99654.87",
-      "max_capital": "\u20b910000.00",
-      "note": "Premium-based backtest with theta decay simulation"
+      "error": "Skipped - no live data"
     }
   },
-  "generated_at": "2026-02-10 23:57:29 IST",
+  "generated_at": "2026-02-11 04:00:42 IST",
   "trading_rules": [
     "Rule 1: Only trade ORB breakouts (9:15-9:45 range)",
     "Rule 2: Require ATR expansion (volatility must increase)",
