@@ -2,13 +2,14 @@ name: Run ORB Options Engine
 
 on:
   schedule:
-    # Every 5 minutes (UTC). Indian market ~3:30 AM to 9:30 AM UTC
-    - cron: "*/5 * * * 1-5"
+    # 03:40 UTC = 09:10 IST (just before market ORB formation)
+    - cron: "40 3 * * 1-5"
   workflow_dispatch:
 
 jobs:
   run-orb-engine:
     runs-on: ubuntu-latest
+    timeout-minutes: 420   # 7 hours max safety limit
 
     steps:
       - name: Checkout repo
@@ -24,16 +25,27 @@ jobs:
           pip install --upgrade pip
           pip install yfinance pandas numpy
 
-      - name: Run ORB Engine
-        id: run_orb
+      - name: Run ORB Engine every 5 minutes (continuous loop)
         run: |
-          python engine.py || echo "⚠️ Script completed with warnings/errors, see orb_analysis.json"
+          echo "Starting ORB engine loop..."
+
+          # 80 loops × 5 minutes = 400 minutes ≈ 6h 40m (covers 9:15–3:30)
+          for i in {1..80}
+          do
+            echo "-----------------------------"
+            echo "Run #$i at $(date)"
+            echo "-----------------------------"
+
+            python engine.py || echo "Script error, continuing..."
+
+            sleep 300
+          done
 
       - name: Commit & Push orb_analysis.json
         run: |
           git config user.name "bot"
           git config user.email "bot@github.com"
           git add orb_analysis.json
-          git commit -m "Update ORB analysis" || echo "No changes to commit"
-          git pull --rebase || echo "Pull failed, proceeding"
-          git push || echo "Push failed, proceeding"
+          git commit -m "Update ORB analysis" || echo "No changes"
+          git pull --rebase || echo "Pull skipped"
+          git push || echo "Push skipped"
