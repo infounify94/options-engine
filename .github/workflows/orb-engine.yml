@@ -2,127 +2,52 @@ name: ORB Live Engine (NIFTY/BANKNIFTY)
 
 on:
   schedule:
-    # Every 5 min during market hours
-    # 03:40–10:10 UTC = 09:10–15:40 IST
-    - cron: "*/5 4-10 * * 1-5"
-    # Special trigger exactly at 9:15 IST
-    - cron: "45 3 * * 1-5"
-  workflow_dispatch:
+    # 09:15–15:30 IST  = 03:45–10:00 UTC
+    - cron: "45,50,55 3 * * 1-5"
+    - cron: "*/5 4-9 * * 1-5"
 
-# 🔑 CRITICAL: Grant write permissions
-permissions:
-  contents: write
+  workflow_dispatch:
 
 jobs:
   run-orb-engine:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0  # Full history for better git operations
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.11"
-          cache: 'pip'  # Cache pip packages for faster runs
+          python-version: "3.10"
 
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install yfinance pandas numpy
+          pip install yfinance pandas numpy requests
 
-      # 🔍 Debug: Check current state
-      - name: Pre-run diagnostics
+      # Retry logic in case Yahoo fails
+      - name: Run ORB Engine (retry 3 times if needed)
         run: |
-          echo "📂 Current directory: $(pwd)"
-          echo "📋 Files before run:"
-          ls -la
-          echo "🌿 Current branch: $(git branch --show-current)"
-          echo "⏰ Current time (UTC): $(date -u)"
-          echo "⏰ Current time (IST): TZ=Asia/Kolkata date"
-
-      # 🔁 Auto retry if Yahoo fails
-      - name: Run ORB Engine (retry up to 3 times)
-        run: |
-          for i in 1 2 3; do
-            echo "🔄 Attempt $i of 3"
-            if python engine.py; then
-              echo "✅ Script executed successfully"
-              break
-            else
-              echo "❌ Script failed with exit code $?"
-              if [ $i -lt 3 ]; then
-                echo "⏳ Retrying in 15 seconds..."
-                sleep 15
-              else
-                echo "⚠️ All retries exhausted"
-                exit 1
-              fi
-            fi
+          for i in 1 2 3
+          do
+            echo "Attempt $i..."
+            python engine.py && break
+            echo "Retrying in 10 seconds..."
+            sleep 10
           done
 
-      # 🔍 Debug: Check if file was created/modified
-      - name: Post-run diagnostics
+      # IMPORTANT: This prevents merge conflicts forever
+      - name: Commit & Push JSON safely
         run: |
-          echo "📋 Files after run:"
-          ls -la
-          if [ -f orb_analysis.json ] || [ -f orb_analysis_multi_trade.json ]; then
-            echo "✅ JSON file(s) found"
-            echo "📄 orb_analysis.json size: $(stat -f%z orb_analysis.json 2>/dev/null || stat -c%s orb_analysis.json 2>/dev/null || echo 'not found')"
-            echo "📄 orb_analysis_multi_trade.json size: $(stat -f%z orb_analysis_multi_trade.json 2>/dev/null || stat -c%s orb_analysis_multi_trade.json 2>/dev/null || echo 'not found')"
-            echo "📊 Git status:"
-            git status
-          else
-            echo "⚠️ No JSON file generated!"
-            exit 1
-          fi
-
-      # 📤 Commit & Push with better error handling
-      - name: Commit & Push JSON
-        run: |
-          # Configure git
           git config user.name "orb-bot"
-          git config user.email "orb-bot@users.noreply.github.com"
-          
-          # Add all JSON files
-          git add orb_analysis*.json || echo "No JSON files to add"
-          
-          # Check if there are changes
-          if git diff --staged --quiet; then
-            echo "ℹ️ No changes to commit"
-            exit 0
-          fi
-          
-          # Commit with timestamp
-          TIMESTAMP=$(TZ=Asia/Kolkata date '+%Y-%m-%d %H:%M:%S IST')
-          git commit -m "🤖 Auto update ORB data - $TIMESTAMP" || {
-            echo "❌ Commit failed"
-            exit 1
-          }
-          
-          # Pull with rebase to avoid conflicts
-          git pull --rebase origin main || {
-            echo "⚠️ Pull failed, attempting to abort rebase"
-            git rebase --abort
-            exit 1
-          }
-          
-          # Push changes
-          git push origin main || {
-            echo "❌ Push failed"
-            git status
-            exit 1
-          }
-          
-          echo "✅ Successfully pushed changes"
+          git config user.email "bot@github.com"
 
-      # 📧 Optional: Notify on failure
-      - name: Failure notification
-        if: failure()
-        run: |
-          echo "❌ Workflow failed at $(TZ=Asia/Kolkata date '+%Y-%m-%d %H:%M:%S IST')"
-          echo "Check logs for details"
+          # Always sync with latest repo state
+          git fetch origin main
+          git reset --hard origin/main
+
+          git add orb_analysis_multi_trade.json
+          git commit -m "🤖 ORB update - $(date)" || echo "No changes"
+
+          git push origin main --force
