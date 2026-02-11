@@ -1,15 +1,19 @@
-name: Run ORB Options Engine
+name: ORB Live Engine (NIFTY/BANKNIFTY)
 
 on:
   schedule:
-    # 03:40 UTC = 09:10 IST (just before market ORB formation)
-    - cron: "40 3 * * 1-5"
+    # Every 5 min during market hours
+    # 03:40–10:10 UTC = 09:10–15:40 IST
+    - cron: "*/5 4-10 * * 1-5"
+
+    # Special trigger exactly at 9:15 IST
+    - cron: "45 3 * * 1-5"
+
   workflow_dispatch:
 
 jobs:
   run-orb-engine:
     runs-on: ubuntu-latest
-    timeout-minutes: 420   # 7 hours max safety limit
 
     steps:
       - name: Checkout repo
@@ -25,27 +29,24 @@ jobs:
           pip install --upgrade pip
           pip install yfinance pandas numpy
 
-      - name: Run ORB Engine every 5 minutes (continuous loop)
+      # 🔁 Auto retry if Yahoo fails
+      - name: Run ORB Engine (retry up to 3 times)
         run: |
-          echo "Starting ORB engine loop..."
-
-          # 80 loops × 5 minutes = 400 minutes ≈ 6h 40m (covers 9:15–3:30)
-          for i in {1..80}
+          for i in 1 2 3
           do
-            echo "-----------------------------"
-            echo "Run #$i at $(date)"
-            echo "-----------------------------"
-
-            python engine.py || echo "Script error, continuing..."
-
-            sleep 300
+            echo "Attempt $i"
+            python engine.py && break
+            echo "Retrying in 10 seconds..."
+            sleep 10
           done
 
-      - name: Commit & Push orb_analysis.json
+      - name: Commit & Push JSON
         run: |
-          git config user.name "bot"
+          git config user.name "orb-bot"
           git config user.email "bot@github.com"
+
           git add orb_analysis.json
-          git commit -m "Update ORB analysis" || echo "No changes"
-          git pull --rebase || echo "Pull skipped"
-          git push || echo "Push skipped"
+          git commit -m "Auto update ORB data $(date)" || echo "No changes"
+
+          git pull --rebase || true
+          git push || true
